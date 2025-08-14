@@ -1,0 +1,14 @@
+salida_paralela.txt  simulacion_paralela  simulacion_paralela.c  simulacion_secuencial.c
+
+nano  simulacion_secuencial.c
+nano  simulacion_paralela.c
+
+gcc -fopenmp simulacion_secuencial.c -o simulacion_secuencial
+gcc -fopenmp simulacion_paralela.c -o simulacion_paralela
+
+./simulacion_paralela > salida_paralela.txt
+./simulacion_secuencial > salida_secuencial.txt
+
+cp salida_secuencial.txt salida_paralela.txt "/mnt/c/Fichero/Universidad/8 Semestre/Paralela/Micro-Proyectos/MP2-Paralela/mp-trafico-paralela/"
+
+

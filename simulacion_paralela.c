@@ -1,20 +1,10 @@
-/*
- * simulacion_paralela.c
- * Simulación de tráfico usando OpenMP con paralelismo dinámico
- * Proyecto: Mini Proyecto Tráfico - Computación Paralela y Distribuida
- * Autor: [Tu Nombre]
- * Fecha: Agosto 2025
- *
- * Este programa simula vehículos y semáforos.
- * Los vehículos avanzan si su semáforo está en verde,
- * usando paralelismo dinámico para balancear el trabajo entre hilos.
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <omp.h>
 
+//-------------- Estructuras y enumeraciones -------------- 
+//Se define el estado del semáforo y las estrucuturas par amodelar vehículos y semáforos
 // Enumeración para los estados de un semáforo
 typedef enum {
     ROJO = 0,
@@ -35,6 +25,13 @@ typedef struct {
     int posicion;
 } Vehiculo;
 
+// --------------------------------------------------------
+
+// -------------- Inicialización --------------------------
+//  Estas funciones llenan los arreglos con valores iniciales para los objetivos
+//  -  Cada vehiculo inicia en posición 0 
+//  -  Cada semáforo inciia con un estaado cídiclico (Rojo, Verde, Amarillo, ....)
+
 // Función para inicializar los vehículos
 void inicializar_vehiculos(Vehiculo* vehiculos, int total) {
     int i;
@@ -50,9 +47,16 @@ void inicializar_semaforos(Semaforo* semaforos, int total) {
     for (i = 0; i < total; i = i + 1) {
         semaforos[i].id = i;
         semaforos[i].estado = i % 3;  // ROJO, VERDE, AMARILLO en secuencia
+                                      // Calcula el residuo de dividir i entre 3.
+                                      // Los posibles resultados son: 0, 1, 2.
         semaforos[i].contador_cambio = 0;
     }
 }
+// --------------------------------------------------------
+
+// ------------- Lógica de actualización ------------------
+// Incrementa un contador en cada semafóro
+// Si el contado llega a 3, cambia de estado: Rojo -> Verde -> Amarillo -> Rojo ...
 
 // Función para actualizar el estado de los semáforos
 void actualizar_semaforos(Semaforo* semaforos, int total) {
@@ -66,6 +70,13 @@ void actualizar_semaforos(Semaforo* semaforos, int total) {
         }
     }
 }
+//--------------------------------------------------------
+// ------------- Paralelismo con OpenMP ------------------
+// - Divide automanticamente los vehiculos entre los hilos disposnibles
+// - Si el semáforo asociado está en VERDE, el hilo avanza el vehículo
+// - Se imprime que hilo movió qué vehículo
+//La clásula "Schedule(dynamic)"es el que permite OpenMP asigne tareas a 
+//medida que los hilos se van desocupando -> mejor en el balance de carga.
 
 // Función para mover vehículos con paralelismo dinámico
 void mover_vehiculos_dinamico(Vehiculo* vehiculos, int total_vehiculos, Semaforo* semaforos, int total_semaforos) {
@@ -90,6 +101,11 @@ void mover_vehiculos_dinamico(Vehiculo* vehiculos, int total_vehiculos, Semaforo
     }
 }
 
+//-------------------------------------------------------
+// ------------- Mostrar el estado actual ---------------
+//Imprime en consola la posición de cada vehícul y el estado 
+//de cada semáforo por cada iteración.
+
 // Función para mostrar el estado actual de la simulación
 void mostrar_estado(Vehiculo* vehiculos, int total_vehiculos, Semaforo* semaforos, int total_semaforos, int iteracion) {
     int i;
@@ -105,6 +121,14 @@ void mostrar_estado(Vehiculo* vehiculos, int total_vehiculos, Semaforo* semaforo
 
     printf("===========================\n");
 }
+//--------------------------------------------------------
+
+// ------------- Función de simulación principal ---------
+// Aqui se realizan N interaciones de la simualción.
+// - 1. Actualiza los semáforos
+// - 2. Mueve los vehículos (con paralelismo dinámico)
+// - 3. Muestra el estado actual
+// - 4. Espera 1 segundo "sleep(1)" entre iteraciones 
 
 // Función principal de simulación
 void simular(int ciclos, Vehiculo* vehiculos, int total_vehiculos, Semaforo* semaforos, int total_semaforos) {
@@ -116,10 +140,12 @@ void simular(int ciclos, Vehiculo* vehiculos, int total_vehiculos, Semaforo* sem
         sleep(1);  // Esperar 1 segundo entre ciclos
     }
 }
+//--------------------------------------------------------
 
+// ------------- Main -------------------------------------
 // Función principal del programa
 int main() {
-    int total_vehiculos = 20;
+    int total_vehiculos = 400;
     int total_semaforos = 4;
     int ciclos_simulacion = 10;
 
